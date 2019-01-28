@@ -576,6 +576,45 @@ RCFS_GetFile( char *name, unsigned char **data, int *length )
 }
 
 /*-----------------------------------------------------------------------------*/
+/** @brief     Get a pointer to data in a file                                 */
+/** @param[in] name the name of the file to open                               */
+/** @param[in] data handle used to return a pointer to the data                */
+/** @param[in] length pointer to returned length of data in bytes              */
+/*-----------------------------------------------------------------------------*/
+/** @details
+ *  This function searches through the file table of contents looking for a file
+ *  with a name that matches the requested name.  It returns the flash_file 
+ *  reference or NULL if an error occurred.
+ */
+int
+RCFS_GetFileRef( char *name, unsigned char **data, int *length, flash_file *f )
+{
+    if( data == NULL )
+        return(RCFS_ERROR);
+    if( length == NULL )
+        return(RCFS_ERROR);
+
+    // Get the first file
+    if( RCFS_FindFirstFile(f) >= 0 )
+        {
+        do {
+            // Check file for match on name
+            if( strcmp( name, f->name[0] ) == 0 )
+                {
+                // Match
+                *data   = f->data;
+                *length = f->datalength;
+                return(RCFS_SUCCESS);
+                }
+            } while( RCFS_FindNextFile(f) >= 0 );
+        }
+
+    // No match
+    return( RCFS_ERROR );
+}
+
+
+/*-----------------------------------------------------------------------------*/
 /** @brief     Get the name of the last file in the VTOC                       */
 /*-----------------------------------------------------------------------------*/
 /** @details   Use this if you write a file with the default name to dtermine
